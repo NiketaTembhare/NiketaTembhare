@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Plagiarism Checker</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            text-align: center;
+            padding: 20px;
+            transition: all 0.3s ease-in-out;
+        }
+        .container {
+            max-width: 700px;
+            margin: auto;
+            background: #1e1e1e;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease-in-out;
+        }
+        h2 {
+            color: #f1c40f;
+            font-size: 24px;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            resize: none;
+            background: #2c2c2c;
+            color: #fff;
+            outline: none;
+        }
+        button {
+            background: linear-gradient(45deg, #f1c40f, #e67e22);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease-in-out;
+        }
+        button:hover {
+            background: linear-gradient(45deg, #e67e22, #f1c40f);
+            transform: scale(1.05);
+        }
+        #results {
+            margin-top: 20px;
+            text-align: left;
+            background: #2c2c2c;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 5px rgba(255, 255, 255, 0.1);
+        }
+        a {
+            color: #f1c40f;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+    <script>
+        function checkPlagiarism() {
+            var text = document.getElementById("inputText").value;
+            if (!text.trim()) {
+                alert("Please enter some text to check plagiarism.");
+                return;
+            }
+
+            document.getElementById("results").innerHTML = "<p>Checking for plagiarism... Please wait.</p>";
+
+            fetch("/check", {
+                method: "POST",
+                body: new URLSearchParams({ "text": text }),
+                headers: { "Content-Type": "application/x-www-form-urlencoded" }
+            })
+            .then(response => response.json())
+            .then(data => {
+                let resultHtml = `<h3>Plagiarism Detected: ${data.plagiarism_percentage}%</h3>`;
+
+                if (data.results.length > 0) {
+                    resultHtml += "<h4>Potential Sources:</h4><ul>";
+                    data.results.forEach(res => {
+                        resultHtml += `<li><strong>Site:</strong> ${res.site}<br>`;
+                        resultHtml += `<strong>Similarity:</strong> ${res.similarity * 100}%<br>`;
+                        resultHtml += `<a href="${res.url}" target="_blank">${res.url}</a></li><br>`;
+                    });
+                    resultHtml += "</ul>";
+                } else {
+                    resultHtml += "<p>No plagiarism detected.</p>";
+                }
+
+                document.getElementById("results").innerHTML = resultHtml;
+            })
+            .catch(error => console.error("Error:", error));
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h2>🔍 AI Plagiarism Checker</h2>
+        <p>Enter your text below to check for plagiarism.</p>
+        <textarea id="inputText" placeholder="Type or paste your text here..."></textarea><br>
+        <button onclick="checkPlagiarism()">Check Plagiarism</button>
+        <div id="results"></div>
+    </div>
+</body>
+</html>
